@@ -96,7 +96,7 @@ class Advanced extends Builder {
 			'omgf_developer_mode_description',
 			sprintf(
 				__(
-					'Enable this option (on all instances) if you\'re planning to use %s in a (variation of a) Development > Testing > Acceptance/Staging > Production workflow. %s',
+					'Enable this option (on all instances) to make it easier to migrate between Development/Testing/Staging/Production environments. %s',
 					'host-webfonts-local'
 				),
 				apply_filters( 'omgf_settings_page_title', 'OMGF' ),
@@ -156,10 +156,10 @@ class Advanced extends Builder {
 	 */
 	public function do_compatibility() {
 		$this->do_checkbox(
-			__( 'Divi/Elementor Compatibility', 'host-webfonts-local' ),
+			__( 'Divi Compatibility', 'host-webfonts-local' ),
 			Settings::OMGF_ADV_SETTING_COMPATIBILITY, ! empty( OMGF::get_option( Settings::OMGF_ADV_SETTING_COMPATIBILITY ) ),
 			__(
-				'Divi and Elementor use the same handle for Google Fonts stylesheets with different configurations. OMGF includes compatibility fixes to make sure these different stylesheets are processed correctly. Enable this if you see some fonts not appearing correctly. Default: off',
+				'Divi uses the same handle for Google Fonts stylesheets with different configurations. OMGF includes compatibility fixes to make sure these different stylesheets are processed correctly. Enable this if you see some fonts not appearing correctly. Default: off',
 				'host-webfonts-local'
 			)
 		);

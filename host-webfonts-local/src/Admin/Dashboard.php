@@ -49,6 +49,7 @@ class Dashboard {
 	 */
 	const THEMES_ADDTNL_CONF = [
 		'Avada',
+		'colibri-wp',
 		'Divi',
 		'Extra',
 		'thrive-theme',
@@ -150,7 +151,7 @@ class Dashboard {
 									'omgf_google_fonts_checker_general_text',
 									sprintf(
 										__(
-											'Because either your theme, a plugin or a script has implemented Google Fonts in a way only rocket scientists use, %s isn\'t able to process all of them.',
+											'OMGF\'s integrated Google Fonts Checker (introduced in v6) found Google Fonts implementations (added by your theme or a plugin) that cannot be automatically processed.',
 											'host-webfonts-local'
 										),
 										apply_filters( 'omgf_settings_page_title', 'OMGF' )
@@ -244,7 +245,7 @@ class Dashboard {
 					</div>
 				<?php else: ?>
 					<div class="task-manager-notice success">
-						<h4><?php echo esc_html__( 'No external Google Fonts found on your site.', 'host-webfonts-local' ); ?></h4>
+						<h4><?php echo esc_html__( 'All Google Fonts are optimized and hosted locally.', 'host-webfonts-local' ); ?></h4>
 						<p>
 							<?php echo apply_filters(
 								'omgf_dashboard_success_message',
