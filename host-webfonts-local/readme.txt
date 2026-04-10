@@ -3,7 +3,7 @@ Contributors: DaanvandenBergh
 Tags: google, fonts, gdpr, dsgvo, cache
 Requires at least: 5.9
 Tested up to: 6.9
-Stable tag: 6.3.2
+Stable tag: 6.3.3
 Requires PHP: 7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ OMGF automagically caches the Google Fonts used by your theme/plugins locally. N
 > How could using fonts via Google's service possibly run afoul of GDPR? The fact of the matter is that, when a font is requested by the user's browser, their IP is logged by Google and used for analytics.
 > — Lifehacker
 
-**Leverage Browser Cache**, **reduce DNS lookups/requests**, **reduce Cumulative Layout Shift** and make your Google Fonts **100% GDPR compliant** with OMGF!
+**Leverage Browser Cache**, **reduce DNS lookups/requests**, **reduce Cumulative Layout Shift** and make your Google Fonts **100% GDPR-compliant** with OMGF!
 
 OMGF is written with performance and user-friendliness in mind. It uses the Google Fonts API to automatically cache the fonts your theme and plugins use to **minimize DNS requests** and speed up your WordPress website.
 
@@ -27,26 +27,30 @@ After installing and configuring the plugin, OMGF will automatically start looki
 
 All Google Fonts are listed in the **Optimize Local Fonts** section of OMGF's settings screen. There, you can choose to:
 
-- *Preload* fonts to **reduce Cumulative Layout Shift** above the fold,
-- *Unload* fonts that're not used by you, your theme, and/or plugins,
+- *Preload* fonts to **reduce Cumulative Layout Shift** above the fold.
+- *Unload* fonts that're not used by you, your theme, and/or plugins.
 - Set a *Fallback Font Stack* (OMGF Pro required), to further **reduce Cumulative Layout Shift**, or
+- Enable *Magic Fallbacks* (OMGF Pro required), to automatically generate mathematically tuned system font fallbacks that match your Google Fonts' exact proportions, eliminating **layout shift** while fonts load.
 - *Replace* (OMGF Pro required) font-families with system fonts to **speed up loading times**!
 
 = Other Features include =
 
-- The **integrated Google Fonts checker** notifies you if a plugin or your theme has added Google Fonts (e.g. after an update) it can't process.
+- The **integrated Google Fonts checker** notifies you if a plugin or your theme has added Google Fonts (e.g., after an update) it can't process.
+- The **Performance Checker** automatically monitors your Google Fonts' performance and notifies you about potential improvements in 4 areas:
+  - **Unused subsets** — subsets that are downloaded but never used, increasing **Total Blocking Time**,
+  - **Unused font styles/weights** — font variants that are loaded but not used, causing **unused CSS**,
+  - **Missing preloads** — fonts used above the fold that aren't preloaded, increasing **Largest Contentful Paint** and **First Contentful Paint**,
+  - **Cumulative Layout Shift** — layout shift caused by fonts loading after the page is rendered.
 - **Variable Fonts** support,
-- Automatically **Remove unused subsets** to reduce the size of the CSS stylesheet up to 90%!
 - **Remove Resource Hints** (preload, preconnect, dns-prefetch) pointing to `fonts.googleapis.com` or
   `fonts.gstatic.com`,
-- **Ensure text remains visible during webfont load** by forcing the _font-display_ attribute to your Google Fonts,
-- **Ensure text remains visible during webfont load** by forcing the _font-display_ attribute to all your other fonts! (
-  OMGF Pro required),
+	- **Ensure text remains visible during webfont load** by forcing the _font-display_ attribute to your Google Fonts,
+- **Ensure text remains visible during webfont load** by forcing the _font-display_ attribute to all your other fonts! (OMGF Pro required),
 
 = Additional Features in OMGF Pro =
 
-- Run the **Google Fonts checker** in the frontend (for all users) to **organically check for present external Google Fonts** throughout your site.
-- **Smart Preload** automatically configures which fonts should be preloaded i.e., loaded early to reduce Cumulative Layout Shift, Largest Contentful Paint and [Ensure Text Remains Visible During Webfont Load](https://daan.dev/blog/how-to/ensure-text-remains-visible-during-webfont-load/).
+- **Smart Optimize** automatically detects which fonts, subsets, and weights are actually used on each page — preloading the ones that matter and removing the ones that don't, to **eliminate render-blocking resources** and **reduce unused CSS**.
+- **Magic Fallbacks** generates mathematically tuned system font fallbacks that match your Google Fonts' exact proportions, eliminating **layout shift** while fonts load.
 - Automatically configures itself to make sure all externally hosted Google Fonts on your site are hosted locally. OMGF Pro supports:
 	- `@font-face` and `@import` statements inside **inline `<style>` blocks**,
 	- `@font-face` and `@import` statements inside **local stylesheets** loaded by e.g. your theme and/or plugins,
@@ -87,6 +91,10 @@ For the FAQ, [click here](https://daan.dev/docs/omgf-pro-faq/).
 4. Advanced Settings. Change these to make OMGF work with your configuration (if needed). The default settings will suffice for most configurations.
 
 == Changelog ==
+
+= 6.3.3 | April 10th, 2026 =
+* Improved: Performance Checker now also checks Cumulate Layout Shifting (CLS) caused by fonts.
+* Some minor UI fixes.
 
 = 6.3.2 | March 31st, 2026 =
 * Fixed: Uncaught Error: Call to undefined function is_plugin_active(), which was introduced in 6.3.1.

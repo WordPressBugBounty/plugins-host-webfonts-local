@@ -16,23 +16,14 @@
 
 namespace OMGF\Frontend\Compatibility;
 
-use OMGF\Frontend\Process;
-
 /**
  * @codeCoverageIgnore Because it depends on a 3rd party plugin.
  */
-class GroovyMenu {
-	/**
-	 * @var Process $process
-	 */
-	private $process;
-
+class WPCarouselPro {
 	/**
 	 * Build class.
 	 */
 	public function __construct() {
-		$this->process = new Process( true );
-
 		$this->init();
 	}
 
@@ -42,7 +33,17 @@ class GroovyMenu {
 	 * @return void
 	 */
 	private function init() {
-		/** Groovy Menu compatibility */
-		add_filter( 'groovy_menu_final_output', [ $this->process, 'process' ], 11 );
+		add_filter( 'omgf_frontend_process_fonts_set', [ $this, 'maybe_modify_id' ] );
+	}
+
+	/**
+	 * Compatibility fix for WP Carousel Pro by ShapedPlugin
+	 */
+	public function maybe_modify_id( $id ) {
+		if ( str_contains( $id, 'sp-wpcp-google-fonts' ) ) {
+			return 'sp-wpcp-google-fonts';
+		}
+
+		return $id;
 	}
 }

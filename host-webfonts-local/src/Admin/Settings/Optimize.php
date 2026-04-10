@@ -49,8 +49,9 @@ class Optimize extends Builder {
 		add_action( 'omgf_optimize_settings_content', [ $this, 'do_display_option' ], 60 );
 		add_action( 'omgf_optimize_settings_content', [ $this, 'do_promo_apply_font_display_globally' ], 70 );
 		add_action( 'omgf_optimize_settings_content', [ $this, 'do_promo_smart_optimize' ], 80 );
-		add_action( 'omgf_optimize_settings_content', [ $this, 'do_after' ], 90 );
-		add_action( 'omgf_optimize_settings_content', [ $this, 'do_optimize_fonts_contents' ], 100 );
+		add_action( 'omgf_optimize_settings_content', [ $this, 'do_promo_magic_fallbacks' ], 90 );
+		add_action( 'omgf_optimize_settings_content', [ $this, 'do_after' ], 100 );
+		add_action( 'omgf_optimize_settings_content', [ $this, 'do_optimize_fonts_contents' ], 110 );
 		add_action( 'omgf_optimize_settings_content', [ $this, 'close_optimize_fonts_container' ], 300 );
 
 	}
@@ -255,9 +256,11 @@ class Optimize extends Builder {
 				</tr>
 				</thead>
 				<?php
-				$cache_handles   = OMGF::cache_keys();
-				$disable_preload = apply_filters( 'omgf_local_fonts_disable_preload', false );
-				$disable_unload  = apply_filters( 'omgf_local_fonts_disable_unload', false );
+				$cache_handles                = OMGF::cache_keys();
+				$disable_preload              = apply_filters( 'omgf_local_fonts_disable_preload', false );
+				$disable_unload               = apply_filters( 'omgf_local_fonts_disable_unload', false );
+				$disable_fallback_font_stacks = ! defined( 'OMGF_PRO_ACTIVE' );
+				$hide_fallback_font_stacks    = apply_filters( 'omgf_local_fonts_hide_fallback_font_stacks', false );
 				?>
 				<?php foreach ( $this->optimized_fonts as $handle => $fonts ) : ?>
 					<?php
@@ -294,37 +297,30 @@ class Optimize extends Builder {
 											'host-webfonts-local'
 										); ?></a>)</span></td>
 							<td class="fallback-font-stack">
-								<select data-handle="<?php echo esc_attr( $handle ); ?>" data-font-id="<?php echo esc_attr( $handle . '-' . $font->id ); ?>" <?php echo esc_attr(
-									! defined( 'OMGF_PRO_ACTIVE' ) ? 'disabled="disabled"' : ''
-								); ?> name="omgf_pro_fallback_font_stack[<?php echo esc_attr( $handle ); ?>][<?php echo esc_attr( $font->id ); ?>]">
+								<select data-handle="<?php echo esc_attr( $handle ); ?>" data-font-id="<?php echo esc_attr( $handle . '-' . $font->id ); ?>"
+									<?php echo $disable_fallback_font_stacks ? 'disabled="disabled"' : ''; ?>
+									<?php echo $hide_fallback_font_stacks ? 'style="display: none;"' : ''; ?>
+										name="omgf_pro_fallback_font_stack[<?php echo esc_attr( $handle ); ?>][<?php echo esc_attr( $font->id ); ?>]">
 									<option value=''><?php echo esc_attr__( 'None (default)', 'host-webfonts-local' ); ?></option>
 									<?php foreach ( apply_filters( 'omgf_pro_fallback_font_stacks', Settings::OMGF_FALLBACK_FONT_STACKS_OPTIONS ) as $value => $label ) : ?>
-										<option <?php echo esc_attr(
-											defined( 'OMGF_PRO_ACTIVE' ) &&
-											isset( OMGF::get_option( 'omgf_pro_fallback_font_stack' )[ $handle ][ $font->id ] ) &&
-											OMGF::get_option( 'omgf_pro_fallback_font_stack' )[ $handle ][ $font->id ] === $value ? 'selected' : ''
-										); ?> value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $label ); ?></option>
+										<?php $selected = apply_filters( 'omgf_local_fonts_selected_fallback_font_stack', '', $handle, $font->id, $value ); ?>
+										<option <?php echo esc_attr( $selected ); ?> value="<?php echo esc_attr( $value ); ?>">
+											<?php echo esc_html( $label ); ?>
+										</option>
 									<?php endforeach; ?>
 								</select>
+								<?php do_action( 'omgf_optimize_local_fonts_fallback_font_stacks', $font->family, $font->id, $handle ); ?>
 							</td>
 							<td class="replace">
 								<?php
-								$replace  = defined( 'OMGF_PRO_ACTIVE' ) &&
-											isset( OMGF::get_option( 'omgf_pro_replace_font' )[ $handle ][ $font->id ] ) &&
-											OMGF::get_option( 'omgf_pro_replace_font' )[ $handle ][ $font->id ] === 'on' ? 'checked' : '';
-								$fallback = defined( 'OMGF_PRO_ACTIVE' ) && isset(
-										OMGF::get_option( 'omgf_pro_fallback_font_stack' )[ $handle ][ $font->id ]
-									) && OMGF::get_option( 'omgf_pro_fallback_font_stack' )[ $handle ][ $font->id ] !== '';
+								$checked  = apply_filters( 'omgf_local_fonts_check_replace', '', $handle, $font->id );
+								$disabled = apply_filters( 'omgf_local_fonts_disable_replace', ! defined( 'OMGF_PRO_ACTIVE' ), $handle, $font->id );
 								?>
 								<?php do_action( 'omgf_optimize_local_fonts_replace', $handle, $font->id ); ?>
-								<input autocomplete="off" type="checkbox" class="replace" <?php echo esc_attr(
-									$replace
-								); ?> <?php echo esc_attr(
-									$fallback ? '' : 'disabled'
-								); ?> <?php echo ! defined( 'OMGF_PRO_ACTIVE' ) ? 'disabled' : ''; ?>
-									   name="omgf_pro_replace_font[<?php echo esc_attr(
-										   $handle
-									   ); ?>][<?php echo esc_attr( $font->id ); ?>]"/>
+								<input autocomplete="off" type="checkbox" class="replace"
+									<?php echo esc_attr( $checked ); ?>
+									<?php echo $disabled ? esc_attr( 'disabled' ) : ''; ?>
+									   name="omgf_pro_replace_font[<?php echo esc_attr( $handle ); ?>][<?php echo esc_attr( $font->id ); ?>]"/>
 							</td>
 						</tr>
 						<?php $id = ''; ?>
@@ -332,7 +328,7 @@ class Optimize extends Builder {
 							<?php
 							/**
 							 * @since v5.3.0: Variable Fonts are pulled directly from the Google Fonts API,
-							 *                which creates @font-face statements for each separate subset.
+							 *                which creates @font-face statements for each subset.
 							 *                This deals with the duplicate display of font styles. Which also
 							 *                means unloading and/or preloading will unload/preload all available
 							 *                subsets. It's a bit bloaty, but there's no alternative.
@@ -437,11 +433,26 @@ class Optimize extends Builder {
 	public function do_promo_apply_font_display_globally() {
 		$this->do_checkbox(
 			__( 'Apply Font-Display Option Globally (Pro)', 'host-webfonts-local' ),
-			'force_font_display', ! empty( OMGF::get_option( 'force_font_display' ) ),
+			'force_font_display',
+			defined( 'OMGF_PRO_ACTIVE' ) && ! empty( OMGF::get_option( 'force_font_display' ) ),
 			__(
 				'Apply the above <code>font-display</code> attribute value to all <code>@font-face</code> statements found on your site to <strong>ensure text remains visible during webfont load</strong>.',
 				'host-webfonts-local'
-			) . ' ' . $this->promo, ! defined( 'OMGF_PRO_ACTIVE' )
+			) . ' ' . $this->promo,
+			! defined( 'OMGF_PRO_ACTIVE' )
+		);
+	}
+
+	public function do_promo_magic_fallbacks() {
+		$this->do_checkbox(
+			__( 'Magic Fallbacks (Pro)', 'host-webfonts-local' ),
+			'magic_fallbacks',
+			defined( 'OMGF_PRO_ACTIVE' ) && ! empty( OMGF::get_option( 'magic_fallbacks' ) ),
+			__(
+				'Magic Fallbacks generates mathematically tuned system font fallbacks that match your Google Fonts\' exact proportions and <strong>eliminates Cumulative Layout Shift (CLS)</strong> while fonts load. <em>Requires Smart Optimize</em>.',
+				'host-webfonts-local'
+			) . ' ' . $this->promo,
+			! defined( 'OMGF_PRO_ACTIVE' ) || empty( OMGF::get_option( 'smart_optimize' ) )
 		);
 	}
 
@@ -453,11 +464,13 @@ class Optimize extends Builder {
 	public function do_promo_smart_optimize() {
 		$this->do_checkbox(
 			__( 'Smart Optimize (Pro)', 'host-webfonts-local' ),
-			'smart_optimize', ! empty( OMGF::get_option( 'smart_optimize' ) ),
+			'smart_optimize',
+			defined( 'OMGF_PRO_ACTIVE' ) && ! empty( OMGF::get_option( 'smart_optimize' ) ),
 			__(
-				'Let OMGF Pro figure it out! Smart Optimize automatically detects the right fonts, subsets and preloads for every individual page on your site — and removes the ones that don\'t belong. Set it once, forget it forever.',
+				'Smart Optimize automatically detects which fonts, subsets and weights are actually used on each page and preloads the ones that matter and removes the ones that don\'t, to <strong>reduce unused CSS</strong> and <strong>eliminate render-blocking resources</strong>.',
 				'host-webfonts-local'
-			) . ' ' . $this->promo, ! defined( 'OMGF_PRO_ACTIVE' )
+			) . ' ' . $this->promo,
+			! defined( 'OMGF_PRO_ACTIVE' )
 		);
 	}
 
@@ -467,7 +480,8 @@ class Optimize extends Builder {
 	public function do_test_mode() {
 		$this->do_checkbox(
 			__( 'Test Mode', 'host-webfonts-local' ),
-			Settings::OMGF_OPTIMIZE_SETTING_TEST_MODE, ! empty( OMGF::get_option( Settings::OMGF_OPTIMIZE_SETTING_TEST_MODE ) ),
+			Settings::OMGF_OPTIMIZE_SETTING_TEST_MODE,
+			! empty( OMGF::get_option( Settings::OMGF_OPTIMIZE_SETTING_TEST_MODE ) ),
 			__(
 				'With this setting enabled, OMGF\'s optimizations will only be visible to logged in administrators or when <code>?omgf=1</code> is added to an URL in the frontend.',
 				'host-webfonts-local'

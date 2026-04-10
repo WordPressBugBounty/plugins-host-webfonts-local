@@ -453,14 +453,17 @@ class Settings extends Admin {
 	 * @return mixed
 	 */
 	public function footer_text_right( $text ) {
-		if ( ! extension_loaded( 'simplexml' ) ) {
+		if ( ! extension_loaded( 'simplexml' ) || ! extension_loaded( 'mbstring' ) ) {
 			return $text;
 		}
 
 		/**
 		 * If a WordPress update is available, show the original text.
 		 */
-		if ( str_contains( $text, 'Get Version' ) ) {
+		$update_core = get_site_transient( 'update_core' );
+		$update      = ! empty( $update_core->updates ) && $update_core->updates[0]->response === 'upgrade';
+
+		if ( $update ) {
 			return $text;
 		}
 
@@ -486,7 +489,7 @@ class Settings extends Admin {
 		 * Make sure the XML is properly encoded.
 		 */
 		libxml_use_internal_errors( true );
-		$xml = html_entity_decode( $xml );
+		$xml = mb_convert_encoding( $xml, 'UTF-8' );
 		$xml = simplexml_load_string( $xml );
 
 		if ( ! $xml ) {
