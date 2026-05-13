@@ -78,17 +78,15 @@ window.addEventListener('load', () => {
 				status = response.status || null;
 
 				// menu_item only exists if the logged-in user has the manage_options cap.
-				if (this.menu_item === null) {
-					return;
+				if (this.menu_item !== null) {
+					this.menu_item.classList.add('dot');
+
+					if (status) {
+						this.menu_item.classList.add(status);
+					}
 				}
 
-				this.menu_item.classList.add('dot');
-
-				if (status) {
-					this.menu_item.classList.add(status);
-				}
-
-				if ((status !== 'success' && status !== 'warning') && this.sub_menu !== null) {
+				if ((status !== 'success' && status !== 'warning')) {
 					this.addInfoBox(status);
 				}
 
