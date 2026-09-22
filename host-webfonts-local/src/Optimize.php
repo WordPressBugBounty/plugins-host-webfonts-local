@@ -314,7 +314,67 @@ class Optimize {
 			return ''; // @codeCoverageIgnore
 		}
 
+		/**
+		 * @since v6.3.11 Make sure the response is a stylesheet before it's parsed as one. The Google Fonts
+		 *                API (and any locally hosted stylesheet) is served as text/css, so anything else
+		 *                shouldn't be parsed.
+		 */
+		if ( ! $this->is_stylesheet_response( $response ) ) {
+			return ''; // @codeCoverageIgnore
+		}
+
 		return wp_remote_retrieve_body( $response );
+	}
+
+	/**
+	 * Does $response contain a stylesheet?
+	 *
+	 * A response without a Content-Type is accepted, because not every (proxy) server sets one.
+	 *
+	 * @since v6.3.11
+	 *
+	 * @param array $response A response as returned by wp_remote_get().
+	 *
+	 * @return bool
+	 */
+	private function is_stylesheet_response( $response ) {
+		$content_type = wp_remote_retrieve_header( $response, 'content-type' );
+
+		if ( is_array( $content_type ) ) {
+			$content_type = reset( $content_type ); // @codeCoverageIgnore
+		}
+
+		if ( ! $content_type ) {
+			return true;
+		}
+
+		// Normalize before lookup, i.e. strip the parameters (e.g. charset) and lowercase it.
+		$content_type = strtolower( trim( explode( ';', (string) $content_type )[0] ) );
+
+		/**
+		 * @filter omgf_optimize_stylesheet_content_types Allows adding Content-Types used by servers which
+		 *                                               don't serve stylesheets as text/css.
+		 */
+		$allowed = apply_filters(
+			'omgf_optimize_stylesheet_content_types',
+			[ 'text/css', 'text/x-css', 'application/css', 'application/x-css' ]
+		);
+
+		if ( in_array( $content_type, $allowed, true ) ) {
+			return true;
+		}
+
+		// @codeCoverageIgnoreStart
+		OMGF::debug(
+			sprintf(
+				__( 'The response for %1$s was ignored, because it isn\'t a stylesheet: %2$s.', 'host-webfonts-local' ),
+				$this->url,
+				$content_type
+			)
+		);
+
+		return false;
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
@@ -334,7 +394,31 @@ class Optimize {
 		}
 
 		$font_families = array_unique( $font_families[1] );
-		$object        = [];
+
+		/**
+		 * @since v6.3.11 Only keep values which are (or could be) the name of an actual font.
+		 *                A stylesheet which isn't a Google Fonts API response contains font-family
+		 *                declarations outside @font-face statements, e.g. 'Arial,Helvetica,sans-serif
+		 *                !important' or 'inherit'. Those can't be downloaded, and there's no font to
+		 *                match them to, but they were stored as font families all the same. They were
+		 *                also interpolated (unescaped) into a pattern in self::parse_variants(), where
+		 *                any character with a special meaning in a regular expression is interpreted
+		 *                as such.
+		 */
+		$valid_families   = array_filter( $font_families, [ OMGF::class, 'is_valid_font_family' ] );
+		$invalid_families = array_diff( $font_families, $valid_families );
+
+		if ( ! empty( $invalid_families ) ) {
+			OMGF::debug_array( __( 'Skipped invalid font-families', 'host-webfonts-local' ), $invalid_families );
+		}
+
+		$font_families = $valid_families;
+
+		if ( empty( $font_families ) ) {
+			return [];
+		}
+
+		$object = [];
 
 		OMGF::debug_array( __( 'Font-families found', 'host-webfonts-local' ), $font_families );
 
@@ -397,9 +481,12 @@ class Optimize {
 
 		foreach ( $font_faces[0] as $font_face ) {
 			/**
-			 * @since v5.3.3 Exact match for font-family attribute, to prevent similar font names from falling through, e.g., Roboto and Roboto Slab.
+			 * @since v5.3.3  Exact match for font-family attribute, to prevent similar font names from falling through, e.g., Roboto and Roboto Slab.
+			 * @since v6.3.11 Escape the font family, so a name containing a character with a special meaning in a
+			 *                regular expression (e.g., '.*') is matched literally, instead of matching (and claiming
+			 *                the variants of) every other @font-face statement in the stylesheet.
 			 */
-			if ( ! preg_match( '/font-family:[\s\'"]*?' . $font_family . '[\'"]?;/', $font_face ) ) {
+			if ( ! preg_match( '/font-family:[\s\'"]*?' . preg_quote( $font_family, '/' ) . '[\'"]?;/', $font_face ) ) {
 				continue; // @codeCoverageIgnore
 			}
 
