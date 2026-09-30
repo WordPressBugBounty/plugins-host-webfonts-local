@@ -268,11 +268,11 @@ class Optimize extends Builder {
 						$cache_handles[] = $handle;
 					}
 					?>
-					<tbody class="stylesheet" id="<?php echo $handle; ?>">
+					<tbody class="stylesheet" id="<?php echo esc_attr( $handle ); ?>">
 					<tr>
 						<th colspan="6"><?php echo sprintf(
 								__( 'Stylesheet handle: %s', 'host-webfonts-local' ),
-								$handle
+								esc_html( $handle )
 							); ?></th>
 					</tr>
 					<?php foreach ( $fonts as $font ) : ?>
@@ -389,8 +389,6 @@ class Optimize extends Builder {
 					</tbody>
 				<?php endforeach; ?>
 			</table>
-			<input type="hidden" name="<?php echo Settings::OMGF_OPTIMIZE_SETTING_OPTIMIZED_FONTS; ?>"
-				   value="<?php echo base64_encode( serialize( $this->optimized_fonts ) ); ?>"/>
 			<input id="<?php echo Settings::OMGF_OPTIMIZE_SETTING_UNLOAD_STYLESHEETS; ?>" type="hidden"
 				   name="omgf_settings[<?php echo Settings::OMGF_OPTIMIZE_SETTING_UNLOAD_STYLESHEETS; ?>]"
 				   value="<?php echo esc_attr( implode( ',', OMGF::unloaded_stylesheets() ) ); ?>"/>

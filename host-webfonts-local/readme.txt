@@ -2,8 +2,8 @@
 Contributors: DaanvandenBergh
 Tags: google, fonts, gdpr, dsgvo, cache
 Requires at least: 5.9
-Tested up to: 7.0
-Stable tag: 6.3.11
+Tested up to: 7.1
+Stable tag: 6.3.12
 Requires PHP: 7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -86,6 +86,19 @@ For the FAQ, [click here](https://daan.dev/docs/omgf-pro-faq/).
 4. Advanced Settings. Change these to make OMGF work with your configuration (if needed). The default settings will suffice for most configurations.
 
 == Changelog ==
+
+= 6.3.12 =
+* Security: hardened the handling of Google Fonts stylesheet requests.
+* Security: hardened the handling of downloaded font files.
+* Security: admin notices are escaped on output.
+* Security: the redirect after saving settings is restricted to the site's own host.
+* Security: the stylesheet handle is escaped on the Optimize Fonts screen.
+* Improved: removed a legacy, hidden option from the settings form.
+* Security: only administrators can store results or trigger processing through the Admin Bar Menu's status endpoint, even when its permission is widened by a filter. URLs are validated before they're processed.
+* Security: downloaded font files are now validated before they're stored.
+* Fixed: the Font Performance Checker didn't detect fonts which should be preloaded if their @font-face statement used a keyword (e.g. font-weight: normal, which most icon fonts use) or a weight range (i.e. variable fonts).
+* Improved: the Font Performance Checker now also detects fonts which should be preloaded in cross-origin stylesheets loaded without the crossorigin attribute, if the stylesheet's host allows it (most font CDNs do).
+* Tested with WP 7.1.
 
 = 6.3.11 =
 * Security: hardened the detection of Google Fonts stylesheets and the handling of downloaded files. Thanks to Wordfence for responsibly disclosing this issue.

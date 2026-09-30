@@ -18,6 +18,7 @@ namespace OMGF\API;
 
 use OMGF\Admin\Dashboard;
 use OMGF\Admin\Settings;
+use OMGF\Download;
 use OMGF\Helper as OMGF;
 
 class AdminbarMenu {
@@ -54,16 +55,54 @@ class AdminbarMenu {
 	 */
 	public function get_admin_bar_status( $request ) {
 		$params                = $this->clean( $request->get_params() );
-		$stored_results        = $this->update_google_fonts_checker_results( $params );
 		$unused_fonts_analysis = $this->decode_json_array( $params['unused_fonts_analysis'] ?? [] );
 		$preload_analysis      = $this->decode_json_array( $params['preload_analysis'] ?? [] );
 		$cls_analysis          = $this->decode_json_array( $params['cls_analysis'] ?? [] );
 
-		$this->update_perf_metrics( $params, $unused_fonts_analysis, $preload_analysis, $cls_analysis );
+		/**
+		 * @since v6.3.12 The permission for this endpoint can be widened with the omgf_api_adminbar_menu_permission
+		 *                filter (e.g., to allow visitors to request the status), but only administrators may store
+		 *                results or trigger any processing through it. Everyone else gets a read-only status.
+		 */
+		if ( current_user_can( 'manage_options' ) ) {
+			$stored_results = $this->update_google_fonts_checker_results( $params );
+
+			$this->update_perf_metrics( $params, $unused_fonts_analysis, $preload_analysis, $cls_analysis );
+		} else {
+			$stored_results = get_option( Settings::OMGF_DB_GOOGLE_FONTS_CHECKER_RESULTS, [] );
+			$stored_results = is_array( $stored_results ) ? $stored_results : [];
+		}
 
 		$status = $this->calculate_status( $stored_results, $unused_fonts_analysis, $preload_analysis, $cls_analysis );
 
-		return [ 'status' => apply_filters( 'omgf_ajax_admin_bar_status', $status ) ];
+		/**
+		 * @since v6.3.12 Font files which couldn't be downloaded correctly are reported to administrators only, because
+		 *                visitors requesting the status (e.g. for Smart Optimize) need the regular status.
+		 */
+		$download_failures = current_user_can( 'manage_options' ) ? count( Download::get_failures() ) : 0;
+
+		if ( $download_failures > 0 ) {
+			$status = 'alert';
+		}
+
+		$response = [ 'status' => apply_filters( 'omgf_ajax_admin_bar_status', $status ) ];
+
+		if ( $download_failures > 0 ) {
+			$response['download_failures']          = $download_failures;
+			$response['download_failures_text']     = sprintf(
+			/* translators: %d: number of font files */
+				_n(
+					'%d font file couldn\'t be downloaded correctly',
+					'%d font files couldn\'t be downloaded correctly',
+					$download_failures,
+					'host-webfonts-local'
+				),
+				$download_failures
+			);
+			$response['google_fonts_checker_alert'] = ! empty( $stored_results );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -134,6 +173,16 @@ class AdminbarMenu {
 		if ( ! is_array( $urls ) ) {
 			$urls = [];
 		}
+
+		/**
+		 * @since v6.3.12 Validate the URLs before they're passed to any filter.
+		 */
+		$urls = array_filter(
+			$urls,
+			function ( $url ) {
+				return is_string( $url ) && filter_var( $url, FILTER_VALIDATE_URL );
+			}
+		);
 
 		$urls        = apply_filters( 'omgf_ajax_results', $urls, $params, $path );
 		$result_keys = array_keys( $stored_results );
