@@ -3,7 +3,7 @@ Contributors: DaanvandenBergh
 Tags: google, fonts, gdpr, dsgvo, cache
 Requires at least: 5.9
 Tested up to: 7.1
-Stable tag: 6.3.12
+Stable tag: 6.3.13
 Requires PHP: 7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -86,6 +86,11 @@ For the FAQ, [click here](https://daan.dev/docs/omgf-pro-faq/).
 4. Advanced Settings. Change these to make OMGF work with your configuration (if needed). The default settings will suffice for most configurations.
 
 == Changelog ==
+
+= 6.3.13 =
+* Fixed: pages served from a page cache for longer than 12 to 24 hours couldn't be analyzed by OMGF Pro's Smart Optimize, because their (expired) nonce made WordPress reject the request. Logged-out visitors no longer get a nonce, because it's the same for everyone and doesn't protect anything.
+* Fixed: a fatal error ("array_merge(): Argument #1 must be of type array") during Save & Optimize when the stored optimized fonts were corrupted, e.g. by older versions.
+* Fixed: the description of OMGF Pro's Magic Fallbacks option no longer says it requires Smart Optimize; they've worked independently since OMGF Pro v5.2.2.
 
 = 6.3.12 =
 * Security: hardened the handling of Google Fonts stylesheet requests.
