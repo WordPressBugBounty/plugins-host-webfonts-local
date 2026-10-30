@@ -89,13 +89,15 @@
 	border-color: #FF851B;
 }
 
-.omgf #submit {
+.omgf #submit,
+#omgf-import-export .button-primary {
 	background: #00adda;
 	border: 0;
 	padding: 7px 20px;
 }
 
-.omgf #submit:hover {
+.omgf #submit:hover,
+#omgf-import-export .button-primary:hover {
 	background-color: #0099cc;
 }
 
@@ -266,6 +268,11 @@
 .omgf form .omgf-task-manager ul li.unloaded:before {
 	content: "\f460";
 	color: #0074D9;
+}
+
+.omgf form .omgf-task-manager ul li.unused:before {
+	content: "\f469";
+	color: #999;
 }
 
 .omgf form .advanced-processing-notice,
@@ -460,7 +467,8 @@
 	box-shadow: 0px 10px 20px 1px #ccc;
 }
 
-#omgf-help-form .postbox {
+#omgf-help-form .postbox,
+#omgf-import-export.postbox {
 	padding: 5px 25px 10px;
 	border: 0;
 	border-top: 4px solid #00adda;
@@ -468,10 +476,38 @@
 	box-shadow: 0 10px 20px 1px #ccc;
 }
 
-#omgf-help-form .postbox .column-container {
+#omgf-help-form .postbox .column-container,
+#omgf-import-export .column-container {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: space-between;
+}
+
+#omgf-import-export {
+	margin-top: 20px;
+}
+
+#omgf-import-export.postbox {
+	padding-bottom: 20px;
+}
+
+#omgf-import-export .column-container .column {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 300px;
+	margin-right: 25px;
+}
+
+/* Align both buttons at the bottom. */
+#omgf-import-export .column-container .column form {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+#omgf-import-export .column-container .column form .button-primary {
+	margin-top: auto;
 }
 
 #omgf-help-form .postbox .column-container .column ul li {

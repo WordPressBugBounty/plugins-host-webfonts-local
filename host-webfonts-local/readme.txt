@@ -3,7 +3,7 @@ Contributors: DaanvandenBergh
 Tags: google, fonts, gdpr, dsgvo, cache
 Requires at least: 5.9
 Tested up to: 7.1
-Stable tag: 6.3.14
+Stable tag: 6.4.0
 Requires PHP: 7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -86,6 +86,12 @@ For the FAQ, [click here](https://daan.dev/docs/omgf-pro-faq/).
 4. Advanced Settings. Change these to make OMGF work with your configuration (if needed). The default settings will suffice for most configurations.
 
 == Changelog ==
+
+= 6.4.0 =
+* Added: Import/Export settings on the Help tab and through WP-CLI (`wp omgf export`/`wp omgf import`).
+* Added: Cache Status now marks stylesheets that weren't found on your site for 30 days as Unused, so you can remove them.
+* Fixed: OMGF's frontend scripts (and OMGF Pro's Smart Optimize) still ran on pages loaded with ?nomgf=1.
+* Improved: options that are only used in the admin area are no longer loaded on every page request.
 
 = 6.3.14 =
 * Fixed: after emptying OMGF's cache, or updating a theme or plugin (which removes OMGF's cached copies of 3rd party stylesheets), pages served from a page cache kept referring to the removed stylesheets and fonts, so they loaded without (some of) their fonts until the page cache expired. OMGF now flushes the page caches it supports (e.g. WP Fastest Cache, WP Rocket, LiteSpeed Cache) whenever it removes cached files.
